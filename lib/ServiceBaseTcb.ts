@@ -17,15 +17,15 @@ export interface IRecordType extends IRecordBase {
 
 export default class ServiceBaseTcb<IRecord extends IRecordType> {
   @Inject()
-  protected tcbService: CloudbaseService;
+  tcbService: CloudbaseService;
 
-  protected tableName: string;
+  tableName: string;
 
-  private get tcbDb() {
+  get tcbDb() {
     return this.tcbService.database();
   }
 
-  private get tcbColl() {
+  get tcbColl() {
     return this.tcbDb.collection(this.tableName);
   }
 
