@@ -17,7 +17,7 @@ interface IRecordType extends IRecordBase {
 
 export default class ServiceBaseTcb<IRecord extends IRecordType> {
   @Inject()
-  private tcbService: CloudbaseService;
+  protected tcbService: CloudbaseService;
 
   protected tableName: string;
 
