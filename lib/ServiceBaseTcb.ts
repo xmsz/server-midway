@@ -11,7 +11,7 @@ export interface IRecordBase {
   updateTime: number;
 }
 
-interface IRecordType extends IRecordBase {
+export interface IRecordType extends IRecordBase {
   [prop: string]: any;
 }
 
