@@ -69,6 +69,7 @@ export default class ServiceBaseTcb<IRecord extends IRecordType> {
   }) {
     const res = await this.tcbColl
       .where(where)
+      .limit(1)
       .updateAndReturn({ updateTime: +new Date(), ...data });
 
     return res as {
@@ -180,7 +181,11 @@ export default class ServiceBaseTcb<IRecord extends IRecordType> {
 
   async delete({ where }: { where?: FilterOperations<IRecord> }) {
     const res = await this.tcbColl.where(where).remove();
+    return res;
+  }
 
+  async deleteMany({ where }: { where?: FilterOperations<IRecord> }) {
+    const res = await this.tcbColl.where(where).remove();
     return res;
   }
 
