@@ -72,11 +72,7 @@ export default class ServiceBaseTcb<IRecord extends IRecordType> {
       .limit(1)
       .updateAndReturn({ updateTime: +new Date(), ...data });
 
-    return res as {
-      requestId?: string;
-      updated?: number;
-      doc?: IRecord;
-    };
+    return res.doc as IRecord;
   }
 
   async upsert({
