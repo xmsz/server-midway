@@ -180,7 +180,7 @@ export default class ServiceBaseTcb<IRecord extends IRecordType> {
   }
 
   async delete({ where }: { where?: FilterOperations<IRecord> }) {
-    const res = await this.tcbColl.where(where).remove();
+    const res = await this.tcbColl.where(where).limit(1).remove();
     return res;
   }
 
