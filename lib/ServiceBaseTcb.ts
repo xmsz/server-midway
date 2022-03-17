@@ -176,7 +176,8 @@ export default class ServiceBaseTcb<IRecord extends IRecordType> {
   }
 
   async delete({ where }: { where?: FilterOperations<IRecord> }) {
-    const res = await this.tcbColl.where(where).limit(1).remove();
+    const record = await this.findUnique({ where });
+    const res = await this.tcbColl.doc(record._id).remove();
     return res;
   }
 
