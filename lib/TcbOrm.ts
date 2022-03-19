@@ -1,4 +1,4 @@
-import { Inject } from '@midwayjs/decorator';
+import { Init, Inject } from '@midwayjs/decorator';
 import { CloudbaseService } from 'midway-cloudbase';
 import { FilterOperations, UpdateFilter } from 'mongodb';
 import { Database, Database as TcbDatabase } from '@cloudbase/node-sdk/types';
@@ -15,18 +15,18 @@ export interface IRecordType extends IRecordBase {
   [prop: string]: any;
 }
 
-export default class ServiceBaseTcb<IRecord extends IRecordType> {
+export default class TcbOrm<IRecord extends IRecordType> {
   @Inject()
   tcbService: CloudbaseService;
 
   tableName: string;
+  db: Database.Db;
+  coll: Database.CollectionReference;
 
-  get tcbDb() {
-    return this.tcbService.database();
-  }
-
-  get tcbColl() {
-    return this.tcbDb.collection(this.tableName);
+  @Init()
+  async init() {
+    this.db = this.tcbService.database();
+    this.coll = this.db.collection(this.tableName);
   }
 
   async createMany(
@@ -34,7 +34,7 @@ export default class ServiceBaseTcb<IRecord extends IRecordType> {
       Omit<WithOptional<IRecord, 'updateTime' | 'createTime' | '_id'>, '_id'>
     >
   ) {
-    const res = await this.tcbColl.add(
+    const res = await this.coll.add(
       data.map(item => ({
         updateTime: +new Date(),
         createTime: +new Date(),
@@ -51,7 +51,7 @@ export default class ServiceBaseTcb<IRecord extends IRecordType> {
       '_id'
     >
   ) {
-    const res = await this.tcbColl.add({
+    const res = await this.coll.add({
       updateTime: +new Date(),
       createTime: +new Date(),
       ...data,
@@ -67,7 +67,7 @@ export default class ServiceBaseTcb<IRecord extends IRecordType> {
     where: FilterOperations<IRecord>;
     data: UpdateFilter<IRecord>;
   }) {
-    const res = await this.tcbColl
+    const res = await this.coll
       .where(where)
       .limit(1)
       .updateAndReturn({ updateTime: +new Date(), ...data });
@@ -102,9 +102,7 @@ export default class ServiceBaseTcb<IRecord extends IRecordType> {
     where: FilterOperations<IRecord>;
     data: UpdateFilter<IRecord>;
   }) {
-    await this.tcbColl
-      .where(where)
-      .update({ updateTime: +new Date(), ...data });
+    await this.coll.where(where).update({ updateTime: +new Date(), ...data });
   }
 
   async updateById(id: string, data: UpdateFilter<IRecord>) {
@@ -156,7 +154,7 @@ export default class ServiceBaseTcb<IRecord extends IRecordType> {
     orderBy?: Partial<Record<keyof IRecord, Database.OrderByDirection>>;
     select?: Partial<Record<keyof IRecord, boolean>>;
   }) {
-    let query = this.tcbColl.where(where || {});
+    let query = this.coll.where(where || {});
 
     if (orderBy) {
       const orderByKeys = Object.entries(orderBy);
@@ -177,12 +175,12 @@ export default class ServiceBaseTcb<IRecord extends IRecordType> {
 
   async delete({ where }: { where?: FilterOperations<IRecord> }) {
     const record = await this.findUnique({ where });
-    const res = await this.tcbColl.doc(record._id).remove();
+    const res = await this.coll.doc(record._id).remove();
     return res;
   }
 
   async deleteMany({ where }: { where?: FilterOperations<IRecord> }) {
-    const res = await this.tcbColl.where(where).remove();
+    const res = await this.coll.where(where).remove();
     return res;
   }
 
@@ -214,7 +212,7 @@ export default class ServiceBaseTcb<IRecord extends IRecordType> {
   }
 
   async count({ where }: { where?: FilterOperations<IRecord> }) {
-    const query = this.tcbColl.where(where || {});
+    const query = this.coll.where(where || {});
     const { total } = await query.count();
 
     return {
@@ -223,7 +221,7 @@ export default class ServiceBaseTcb<IRecord extends IRecordType> {
   }
 
   aggregate() {
-    const aggregate = this.tcbColl.aggregate() as TcbDatabase.Aggregation;
+    const aggregate = this.coll.aggregate() as TcbDatabase.Aggregation;
 
     return aggregate;
   }
