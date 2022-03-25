@@ -1,6 +1,6 @@
 import { Init, Inject } from '@midwayjs/decorator';
 import { CloudbaseService } from 'midway-cloudbase';
-import { FilterOperations, UpdateFilter } from 'mongodb';
+import { Filter, UpdateFilter } from 'mongodb';
 import { Database, Database as TcbDatabase } from '@cloudbase/node-sdk/types';
 
 type WithOptional<T, K extends keyof T> = Omit<T, K> & Partial<Pick<T, K>>;
@@ -64,7 +64,7 @@ export default class TcbOrm<IRecord extends IRecordType> {
     where,
     data,
   }: {
-    where: FilterOperations<IRecord>;
+    where: Filter<IRecord>;
     data: UpdateFilter<IRecord>;
   }) {
     const res = await this.coll
@@ -80,7 +80,7 @@ export default class TcbOrm<IRecord extends IRecordType> {
     update,
     create,
   }: {
-    where: FilterOperations<IRecord>;
+    where: Filter<IRecord>;
     update: UpdateFilter<IRecord>;
     create: Omit<
       WithOptional<IRecord, 'updateTime' | 'createTime' | '_id'>,
@@ -99,7 +99,7 @@ export default class TcbOrm<IRecord extends IRecordType> {
     where,
     data,
   }: {
-    where: FilterOperations<IRecord>;
+    where: Filter<IRecord>;
     data: UpdateFilter<IRecord>;
   }) {
     await this.coll.where(where).update({ updateTime: +new Date(), ...data });
@@ -117,7 +117,7 @@ export default class TcbOrm<IRecord extends IRecordType> {
   }
 
   async query(args: {
-    where?: FilterOperations<IRecord>;
+    where?: Filter<IRecord>;
     skip?: number;
     take?: number;
     orderBy?: Partial<Record<keyof IRecord, Database.OrderByDirection>>;
@@ -148,7 +148,7 @@ export default class TcbOrm<IRecord extends IRecordType> {
     orderBy,
     select,
   }: {
-    where?: FilterOperations<IRecord>;
+    where?: Filter<IRecord>;
     skip?: number;
     take?: number;
     orderBy?: Partial<Record<keyof IRecord, Database.OrderByDirection>>;
@@ -173,13 +173,13 @@ export default class TcbOrm<IRecord extends IRecordType> {
     return data as IRecord[];
   }
 
-  async delete({ where }: { where?: FilterOperations<IRecord> }) {
+  async delete({ where }: { where?: Filter<IRecord> }) {
     const record = await this.findUnique({ where });
     const res = await this.coll.doc(record._id).remove();
     return res;
   }
 
-  async deleteMany({ where }: { where?: FilterOperations<IRecord> }) {
+  async deleteMany({ where }: { where?: Filter<IRecord> }) {
     const res = await this.coll.where(where).remove();
     return res;
   }
@@ -188,7 +188,7 @@ export default class TcbOrm<IRecord extends IRecordType> {
     where,
     orderBy,
   }: {
-    where?: FilterOperations<IRecord>;
+    where?: Filter<IRecord>;
     orderBy?: Partial<Record<keyof IRecord, Database.OrderByDirection>>;
   }) {
     const res = await this.findMany({
@@ -211,7 +211,7 @@ export default class TcbOrm<IRecord extends IRecordType> {
     return res ? res : null;
   }
 
-  async count({ where }: { where?: FilterOperations<IRecord> }) {
+  async count({ where }: { where?: Filter<IRecord> }) {
     const query = this.coll.where(where || {});
     const { total } = await query.count();
 
