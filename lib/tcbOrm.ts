@@ -225,4 +225,14 @@ export default class TcbOrm<IRecord extends IRecordType> {
 
     return aggregate;
   }
+
+  startTransaction() {
+    return this.db.startTransaction();
+  }
+
+  withTransaction(transaction: Database.Transaction) {
+    return Object.assign(Object.create(Object.getPrototypeOf(this)), this, {
+      coll: transaction.collection(this.tableName),
+    }) as this;
+  }
 }
