@@ -42,7 +42,7 @@ export default class TcbOrm<IRecord extends IRecordType> {
       }))
     );
 
-    return res;
+    return { count: res.ids?.length || 0 };
   }
 
   async create(
@@ -57,7 +57,9 @@ export default class TcbOrm<IRecord extends IRecordType> {
       ...data,
     });
 
-    return res;
+    const record = await this.findById(res.id!);
+
+    return record!;
   }
 
   async update({
